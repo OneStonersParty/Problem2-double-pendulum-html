@@ -1,0 +1,7 @@
+#simulation {
+  border:1px solid #000000;
+}
+
+line.pendulum {
+  stroke:rgb(255,0,0);stroke-width:2
+}

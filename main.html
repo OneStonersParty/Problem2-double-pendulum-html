@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+ 	<head>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+
+		<script
+			src="https://code.jquery.com/jquery-3.2.1.min.js"
+			integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+			crossorigin="anonymous"></script>
+
+  	</head>
+
+	<body>
+    <canvas id="simulation" width="600" height="600"> </canvas>
+	</body>
+
+	<script type="text/javascript">
+    $(document).ready(function () {
+      var ctx = document.getElementById('simulation').getContext('2d');
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fillStyle="red";
+      ctx.translate(300, 300);
+
+      var lastTick = new Date().getTime();
+
+      var gravity = 9.81;
+      var meterInPixel = 200;
+
+      var pendulum = {
+        theta: 36*Math.PI/180,
+        omega: 0,
+        length: (100/meterInPixel)
+      };
+
+      function init() {
+        window.requestAnimationFrame(draw);
+      }
+
+      function draw() {
+        var currentTick = new Date().getTime();
+        simulatePendulum(pendulum,currentTick-lastTick);
+        ctx.clearRect(-300, -250, 600, 550); // clear canvas
+        drawPendulum(pendulum);
+        lastTick = currentTick;
+        //updateChart();
+        window.requestAnimationFrame(draw);
+      }
+
+      function simulatePendulum(pendulum, deltaT) {
+        deltaT = deltaT / 1000;
+
+        pendulum.theta += pendulum.omega * deltaT;
+        pendulum.omega -= gravity/pendulum.length * Math.sin(pendulum.theta) * deltaT;
+
+        console.log("theta = " + pendulum.theta + "    omega = " + pendulum.omega);
+      }
+
+      function drawPendulum(pendulum) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rotate(pendulum.theta);
+        ctx.moveTo(0,0);
+
+        ctx.lineTo(0,pendulum.length*meterInPixel);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      init();
+    });
+	</script>
+</html>
