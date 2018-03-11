@@ -26,11 +26,18 @@
       var gravity = 9.81;
       var meterInPixel = 200;
 
-      var pendulum = {
-        theta: 36*Math.PI/180,
-        omega: 0,
-        length: (100/meterInPixel)
-      };
+      var pendulum = [
+        {
+          theta: 6*Math.PI/180,
+          omega: 0,
+          length: (100/meterInPixel)
+        },
+        {
+          theta: -20*Math.PI/180,
+          omega: 0,
+          length: (80/meterInPixel)
+        }
+      ];
 
       function init() {
         window.requestAnimationFrame(draw);
@@ -40,28 +47,31 @@
         var currentTick = new Date().getTime();
         simulatePendulum(pendulum,currentTick-lastTick);
         ctx.clearRect(-300, -250, 600, 550); // clear canvas
-        drawPendulum(pendulum);
+        drawPendulum();
         lastTick = currentTick;
-        //updateChart();
+
         window.requestAnimationFrame(draw);
       }
 
       function simulatePendulum(pendulum, deltaT) {
         deltaT = deltaT / 1000;
 
-        pendulum.theta += pendulum.omega * deltaT;
-        pendulum.omega -= gravity/pendulum.length * Math.sin(pendulum.theta) * deltaT;
+        pendulum[0].theta += pendulum[0].omega * deltaT;
+        pendulum[0].omega -= gravity/pendulum[0].length * Math.sin(pendulum[0].theta) * deltaT;
 
-        console.log("theta = " + pendulum.theta + "    omega = " + pendulum.omega);
+        console.log("theta = " + pendulum[0].theta + "    omega = " + pendulum[0].omega);
       }
 
-      function drawPendulum(pendulum) {
+      function drawPendulum() {
         ctx.save();
         ctx.beginPath();
-        ctx.rotate(pendulum.theta);
+        ctx.rotate(pendulum[0].theta);
         ctx.moveTo(0,0);
-
-        ctx.lineTo(0,pendulum.length*meterInPixel);
+        ctx.lineTo(0,pendulum[0].length*meterInPixel);
+        ctx.stroke();
+        ctx.translate(0, pendulum[0].length*meterInPixel);
+        ctx.rotate(pendulum[1].theta-pendulum[0].theta);
+        ctx.lineTo(0,pendulum[1].length*meterInPixel);
         ctx.stroke();
         ctx.restore();
       }
