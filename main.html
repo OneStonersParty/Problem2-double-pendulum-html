@@ -18,23 +18,39 @@
     $(document).ready(function () {
       var ctx = document.getElementById('simulation').getContext('2d');
       ctx.globalCompositeOperation = 'destination-over';
-      ctx.fillStyle="red";
-      ctx.translate(300, 300);
-
-      var lastTick = new Date().getTime();
+      ctx.fillStyle="black";
 
       var gravity = 9.81;
       var meterInPixel = 200;
+
+      ctx.moveTo(10, 18);
+      ctx.lineTo(10, 32);
+      ctx.moveTo(10, 25);
+      ctx.lineTo(10+meterInPixel, 25);
+      ctx.moveTo(10+meterInPixel, 18);
+      ctx.lineTo(10+meterInPixel, 32);
+      ctx.stroke();
+
+      ctx.fillStyle="black";
+      ctx.font = "20px Arial";
+      ctx.fillText("1m",20+meterInPixel,32);
+      ctx.fillText("g = " + gravity + "m/s\u00B2",470,32);
+
+      ctx.translate(300, 300);
+
+      var lastTick = new Date().getTime();
 
       var pendulum = [
         {
           theta: 6*Math.PI/180,
           omega: 0,
+          acc: 0,
           length: (100/meterInPixel)
         },
         {
-          theta: -20*Math.PI/180,
+          theta: 0,
           omega: 0,
+          acc: 0,
           length: (80/meterInPixel)
         }
       ];
@@ -50,14 +66,40 @@
         drawPendulum();
         lastTick = currentTick;
 
-        window.requestAnimationFrame(draw);
+        if (pendulum[0].theta)
+          window.requestAnimationFrame(draw);
+        else {
+          ctx.fillStyle="red";
+          ctx.font = "36px Arial";
+          ctx.fillText("Error: Calculation crashed",-200,-20);
+        }
       }
 
       function simulatePendulum(pendulum, deltaT) {
         deltaT = deltaT / 1000;
 
         pendulum[0].theta += pendulum[0].omega * deltaT;
-        pendulum[0].omega -= gravity/pendulum[0].length * Math.sin(pendulum[0].theta) * deltaT;
+        pendulum[1].theta += pendulum[1].omega * deltaT;
+
+        var cosDtheta = Math.cos(pendulum[0].theta - pendulum[1].theta);
+        var sinDtheta = Math.cos(pendulum[0].theta - pendulum[1].theta);
+
+        // Helper variable
+        var pend0acc = pendulum[0].acc;
+
+        // Assuming both penulums have equal mass
+        pendulum[0].acc = 0.5*pendulum[1].length / pendulum[0].length * (
+          pendulum[1].acc * cosDtheta +
+          Math.pow(pendulum[1].omega,2) * sinDtheta * deltaT
+        ) + gravity/pendulum[0].length * Math.sin(pendulum[0].theta) * deltaT;
+
+        pendulum[1].acc = pendulum[0].length / pendulum[1].length * (
+          pendulum[0].acc * cosDtheta +
+          Math.pow(pendulum[0].omega,2) * sinDtheta * deltaT
+        ) + gravity/pendulum[1].length * Math.sin(pendulum[1].theta) * deltaT;
+
+        pendulum[0].omega -= pendulum[0].acc;
+        pendulum[1].omega -= pendulum[1].acc;
 
         console.log("theta = " + pendulum[0].theta + "    omega = " + pendulum[0].omega);
       }
